@@ -1,0 +1,2 @@
+
+CUDA_VISIBLE_DEVICES=1 trl vllm-serve --model Qwen/Qwen2.5-0.5B-Instruct  --dtype=half
