@@ -1,0 +1,1 @@
+ssh -N -L 8000:localhost:8000 zengs@digbio-xugpu-3.missouri.edu 
