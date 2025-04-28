@@ -179,3 +179,6 @@ results/
 
 .vscode/
 .python-version
+stdout/*.out
+make_data_tool/*.csv
+make_data_tool/*.xlsx

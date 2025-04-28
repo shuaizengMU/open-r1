@@ -71,6 +71,82 @@ def accuracy_reward(completions: list[list[dict[str, str]]], solution: list[str]
                 extraction_mode="first_match",
             )
             # Compute binary rewards if verifiable, `None` otherwise to skip this example
+            print("=========================")
+            print("gold_parsed", gold_parsed)
+            print("answer_parsed", answer_parsed)
+            try:
+                reward = float(verify(gold_parsed, answer_parsed))
+            except Exception as e:
+                print(f"verify failed: {e}, answer: {answer_parsed}, gold: {gold_parsed}")
+                reward = None
+        else:
+            # If the gold solution is not parseable, we assign `None` to skip this example
+            reward = None
+            print("Failed to parse gold solution: ", sol)
+        rewards.append(reward)
+
+    return rewards
+
+
+def extract_answer(sentence: str) -> str | None:
+    """
+    Extracts the answer from a given sentence.
+    The answer is expected to be enclosed within <answer> and </answer> tags.
+    The function also looks for common patterns that indicate the answer.
+    If a single letter (A-E) is found, it is returned in uppercase.
+    If no answer is found, None is returned.
+    
+    Args:
+        sentence (str): The input sentence containing the answer.
+
+    Returns:
+        str | None: The extracted answer in uppercase or None if not found.
+    """
+
+    # match all text between <answer> and </answer> tags
+    match = re.search(r'<answer>(.*?)</answer>', sentence, re.IGNORECASE | re.DOTALL)
+    
+    if match:
+        # get all text inside the <answer> tag
+        answer_text = match.group(1)  
+        
+        # find the first occurrence of a single letter A-E (case insensitive)
+        option_match = re.search(r'([A-E])\b', answer_text, re.IGNORECASE)
+        if option_match:
+            return option_match.group(1).upper()
+            
+        # if not found, check for other common patterns
+        patterns = [
+            r'(?:正确答案是选|正确答案是|正确答案为|答案是|应该选|选择|答案为|应为|应选|正确选项是|答案：|答案:)\s*([A-E])',
+            r'选\s*([A-E])\s*项',
+            r'答案\s*([A-E])',
+            r'为\s*([A-E])'
+        ]
+        
+        for pattern in patterns:
+            pattern_match = re.search(pattern, answer_text, re.IGNORECASE)
+            if pattern_match:
+                return pattern_match.group(1).upper()
+    
+    return None
+
+
+def accuracy_reward_cn(completions: list[list[dict[str, str]]], solution: list[str], **kwargs) -> list[Optional[float]]:
+    """Reward function that checks if the completion is the same as the ground truth."""
+    contents = [completion[0]["content"] for completion in completions]
+    rewards = []
+    for content, sol in zip(contents, solution):
+        gold_parsed = parse(
+            sol,
+            extraction_mode="first_match",
+        )
+        if len(gold_parsed) != 0:
+            # We require the answer to be provided in correct latex (no malformed operators)
+            answer_parsed = extract_answer(content)
+            # Compute binary rewards if verifiable, `None` otherwise to skip this example
+            # print("=========================")
+            # print("gold_parsed", gold_parsed)
+            # print("answer_parsed", answer_parsed)
             try:
                 reward = float(verify(gold_parsed, answer_parsed))
             except Exception as e:
@@ -565,7 +641,7 @@ async def run_script(script: str, language: str, semaphore: asyncio.Semaphore) -
 
 def get_reward_funcs(script_args) -> list[Callable]:
     REWARD_FUNCS_REGISTRY = {
-        "accuracy": accuracy_reward,
+        "accuracy": accuracy_reward_cn,
         "format": format_reward,
         "reasoning_steps": reasoning_steps_reward,
         "cosine": get_cosine_scaled_reward(

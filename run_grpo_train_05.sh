@@ -10,13 +10,11 @@
 #SBATCH --mem=24G
 
 ## labels and outputs
-#SBATCH -J GRPOSer  # give the job a custom name
-#SBATCH -o ./stdout/vllm-server.out  # give the job output a custom name
+#SBATCH -J Qwen0.5  # give the job a custom name
+#SBATCH -o ./stdout/Qwen2.5-0.5B-Instruct  # give the job output a custom name
 
 #-------------------------------------------------------------------------------
 
-# module load cuda/11.8.0_gcc_9.5.0 
-# source ~/data/anaconda3/bin/activate ~/data/anaconda3/envs/env_rl
+source ~/data/anaconda3/bin/activate ~/data/anaconda3/envs/env_rl
 
-# CUDA_VISIBLE_DEVICES=0 NCCL_DEBUG=WARN trl vllm-serve --model deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
-sleep 259200 
+CUDA_VISIBLE_DEVICES=0 python src/open_r1/grpo_ctm.py --config recipes/Qwen2.5-0.5B-Instruct/grpo/config_demo.yaml
