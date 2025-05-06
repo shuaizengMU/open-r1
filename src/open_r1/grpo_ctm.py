@@ -76,8 +76,8 @@ def main(script_args, training_args, model_args):
 
     # Load the dataset
     # dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
-    dataset = load_dataset('csv', data_files={'train': '/home/zengs/data/Code/open-r1/make_data_tool/train.csv', 
-                                              'test': '/home/zengs/data/Code/open-r1/make_data_tool/val.csv'})
+    dataset = load_dataset('csv', data_files={'train': '/home/zengs/data/Code/open-r1/make_data_tool/data2/train.csv', 
+                                              'test': '/home/zengs/data/Code/open-r1/make_data_tool/data2/val.csv'})
 
     ################
     # Load tokenizer
